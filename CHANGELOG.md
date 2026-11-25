@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0 – 2026-11-25
+- Ucieczka to jedna akcja: albo czysta ucieczka (szansa w oknie), albo jeden atak na ciebie (strzały / kamienie) i uciekasz poraniony – bez kolejnych rund.
+- Broń przy ucieczce: +15% szansy, ostrzeliwujesz się (zużywa amunicję), strzela/rzuca w ciebie tylko połowa napastników.
+- Automatyczne tagi i GitHub Releases (workflow `.github/workflows/release.yml`) – każda wersja do pobrania w zakładce Releases.
+
 ## 1.2.0 – 2026-11-25
 - Ucieczka: szansa zawsze 20–90% i jest pokazana w oknie ataku. Każda nieudana próba zwiększa szansę na następną (+10%, goniący się męczą). Trafienie w nogę obniża ją o 10% (maks. −20%).
 - Złapany przez policję: pałki, konfiskata towaru i grzywna, potem koniec akcji (bez pętli bicia).

@@ -1,0 +1,52 @@
+name: Release
+
+# Po każdym pushu na main: czyta VERSION z index.html i jeśli taki tag
+# jeszcze nie istnieje, tworzy tag vX.Y.Z oraz GitHub Release z plikiem gry
+# i opisem z CHANGELOG.md.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Odczytaj wersję
+        id: v
+        run: |
+          VER=$(grep -oP "const VERSION='\K[0-9.]+" index.html)
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          if git rev-parse "v$VER" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Notatki z CHANGELOG
+        if: steps.v.outputs.exists == 'false'
+        run: |
+          awk -v v="${{ steps.v.outputs.version }}" '
+            $0 ~ "^## "v" " {on=1; next}
+            /^## / && on {exit}
+            on {print}
+          ' CHANGELOG.md > notes.md
+          cp index.html "maxdila-${{ steps.v.outputs.version }}.html"
+
+      - name: Utwórz tag i release
+        if: steps.v.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.v.outputs.version }}" \
+            "maxdila-${{ steps.v.outputs.version }}.html" \
+            --target "$GITHUB_SHA" \
+            --title "MaxDila ${{ steps.v.outputs.version }}" \
+            --notes-file notes.md
