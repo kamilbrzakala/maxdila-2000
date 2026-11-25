@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.1 – 2026-11-26
+- Limit pożyczki u Zdzisia też rośnie z prestiżem (1500/1000 + prestiż × 120), tak jak limit banku.
+
 ## 1.4.0 – 2026-11-25
 - Dług rozdzielony na dwie pozycje: **Zdzisio** (lichwiarz) i **bank**.
 - Zdzisio: pierwsza pożyczka 10%/dzień, druga 20% i ostatnia. Po pełnej spłacie licznik się zeruje i znów można wziąć 2 razy. Maksymalnie 2 pożyczki naraz — na wypadek gdy ktoś cię obrobi.
