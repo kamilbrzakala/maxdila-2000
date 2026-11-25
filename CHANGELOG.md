@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 – 2026-11-25
+- Dług rozdzielony na dwie pozycje: **Zdzisio** (lichwiarz) i **bank**.
+- Zdzisio: pierwsza pożyczka 10%/dzień, druga 20% i ostatnia. Po pełnej spłacie licznik się zeruje i znów można wziąć 2 razy. Maksymalnie 2 pożyczki naraz — na wypadek gdy ktoś cię obrobi.
+- Bank: osobna pożyczka 5%/dzień, limit zależny od prestiżu, jak wcześniej.
+- Oba długi rosną co dzień. Wynik końcowy odejmuje oba.
+
 ## 1.3.0 – 2026-11-25
 - Ucieczka to jedna akcja: albo czysta ucieczka (szansa w oknie), albo jeden atak na ciebie (strzały / kamienie) i uciekasz poraniony – bez kolejnych rund.
 - Broń przy ucieczce: +15% szansy, ostrzeliwujesz się (zużywa amunicję), strzela/rzuca w ciebie tylko połowa napastników.

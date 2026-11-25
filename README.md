@@ -2,7 +2,7 @@
 
 Przeglądarkowy remake polskiej gry tekstowo-handlowej **MaxDila v1.0** (oryginał: (C) All41, 2000) – klon w stylu Dope Wars.
 
-Aktualna wersja: **1.3.0** – zmiany w [CHANGELOG.md](CHANGELOG.md).
+Aktualna wersja: **1.4.0** – zmiany w [CHANGELOG.md](CHANGELOG.md).
 
 Cała gra to jeden plik `index.html` (HTML + CSS + JS, bez zależności). Otwórz go w przeglądarce albo włącz GitHub Pages.
 
