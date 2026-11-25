@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MaxDila 2000 remake</title>
+<style>
+/* VOICE: nostalgiczna, zadziorna polska gierka z 2000 roku
+ IDEA: okno programu na pulpicie Windows XP
+ PICTURE: samo okno gry, dialogi jak systemowe okienka
+ COLOUR and TYPE: niebieski pasek XP, beż #ece9d8, Tahoma
+ LAYOUT: okno ~680px na środku pulpitu; na telefonie na całą szerokość, kolumny pod sobą */
+:root,:root[data-theme]{color-scheme:light!important}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;min-height:100vh;font:13px/1.35 Tahoma,Verdana,"Segoe UI",sans-serif;color:#000;overflow-x:clip;display:flex;justify-content:center;align-items:flex-start;padding:28px 8px 48px;background:var(--desk);background-attachment:fixed}
+body.bg0{--desk:radial-gradient(ellipse 120% 55% at 25% 108%,#5fae2e 0 45%,transparent 45.3%),radial-gradient(ellipse 90% 45% at 95% 110%,#4b9a20 0 50%,transparent 50.3%),linear-gradient(#245fd0,#6fa7ee 50%,#d3e7fc)}
+body.bg1{--desk:radial-gradient(circle at 80% 15%,#fff8 0 2px,transparent 3px),radial-gradient(circle at 20% 30%,#fff6 0 1px,transparent 2px),radial-gradient(ellipse 120% 50% at 30% 110%,#18301a 0 45%,transparent 45.3%),linear-gradient(#060b24,#1b2a5a)}
+body.bg2{--desk:#008080}
+.win,.dlg{background:#ece9d8;border:3px solid #0a4ad6;border-radius:8px 8px 0 0;box-shadow:3px 6px 16px #0007}
+.win{width:min(690px,100%)}
+.tb{display:flex;align-items:center;gap:6px;padding:4px 4px 4px 8px;color:#fff;font-weight:bold;font-size:13px;text-shadow:1px 1px #0a246a;background:linear-gradient(#4a93f7,#0b5be2 30%,#0750d6 75%,#0a46b8);border-radius:5px 5px 0 0}
+.tb span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb button{width:22px;height:22px;border:1px solid #fff;border-radius:3px;color:#fff;font:bold 13px/1 Tahoma,sans-serif;background:linear-gradient(#6ea6fb,#2464e0);cursor:pointer;padding:0}
+.tb .x{background:linear-gradient(#f0937a,#d6431e)}
+.menu{display:flex;padding:1px 4px;border-bottom:1px solid #fff;position:relative;z-index:5}
+.menu>div{position:relative}
+.menu .m{background:none;border:0;font:inherit;padding:4px 8px;cursor:pointer}
+.menu .m:hover,.menu .open>.m{background:#316ac5;color:#fff}
+.dd{position:absolute;top:100%;left:0;min-width:190px;background:#fff;border:1px solid #888;box-shadow:2px 2px 4px #0005;display:none;padding:2px}
+.open>.dd{display:block}
+.dd button{display:block;width:100%;text-align:left;background:none;border:0;font:inherit;padding:5px 18px;cursor:pointer}
+.dd button:hover{background:#316ac5;color:#fff}
+.dd .on::before{content:"✓";margin-left:-13px;width:13px;display:inline-block}
+.body{padding:8px 10px 10px;background:radial-gradient(circle at 12% 70%,#dfe8cf 0 60px,transparent 61px),radial-gradient(circle at 85% 40%,#e2ead2 0 80px,transparent 81px),#ece9d8}
+.b{font:inherit;min-height:32px;padding:3px 10px;border:1px solid #003c74;border-radius:3px;background:linear-gradient(#fff,#f3f2ea 40%,#e4e1d4 85%,#d4d0c4);cursor:pointer;color:#000}
+.b:hover:not(:disabled){box-shadow:inset 0 0 0 2px #f8b636}
+.b:focus-visible{outline:1px dotted #000;outline-offset:-4px}
+.b:disabled{color:#a5a296;border-color:#c9c7ba;cursor:default;background:#f4f3ee}
+.tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.tools .cr{margin-left:auto;font-size:12px;color:#444}
+.top{display:grid;grid-template-columns:1fr 1.1fr;gap:12px}
+.stats{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:4px 8px;font-weight:bold;font-size:15px;align-items:center}
+.stats output{text-align:right;font-variant-numeric:tabular-nums}
+.lbl{font-size:13px;margin:8px 0 2px}
+.bar{position:relative;height:20px;border:1px solid #555;background:#fff}
+.bar i{position:absolute;inset:0 auto 0 0;background:#f00;transition:width .3s}
+.bar span{position:absolute;inset:0;text-align:center;line-height:18px;color:#fff;font-weight:bold;text-shadow:0 0 2px #000}
+.hint{font-size:13px;margin:0 0 4px}
+#cities{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#cities .b{min-height:34px}
+.box{background:#fff;border:1px solid #7f9db9}
+#log{height:70px;overflow:auto;margin-bottom:8px}
+#log div{padding:1px 4px}
+#log div:last-child{background:#316ac5;color:#fff}
+.bottom{display:grid;grid-template-columns:1fr 100px 1fr;gap:8px;align-items:start}
+.hd{display:flex;justify-content:space-between;align-items:center;min-height:26px;gap:6px}
+.hd .b{min-height:24px;padding:1px 8px}
+.lst{height:212px;overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{font-weight:normal;text-align:left;padding:2px 5px;background:linear-gradient(#fff,#ebeadb);border-right:1px solid #c7c5b2;border-bottom:2px solid #d6d3c4;position:sticky;top:0}
+td{padding:2px 5px;cursor:default;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.sel td{background:#316ac5;color:#fff}
+.mid{display:flex;flex-direction:column;gap:6px;padding-top:26px}
+.mid .b{padding:3px 4px}
+.ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:10px;background:#0002;z-index:50}
+.dlg{width:min(var(--w,360px),100%);max-height:96vh;overflow:auto}
+.dbody{padding:12px 14px 4px}
+.dbody p{margin:0 0 10px}
+.dbtn{display:flex;gap:8px;justify-content:center;padding:6px 14px 14px;flex-wrap:wrap}
+.dbtn .b{min-width:86px}
+input,select,option{font:inherit;font-size:16px;padding:3px 5px;border:1px solid #7f9db9;background:#fff!important;color:#000!important;-webkit-text-fill-color:#000;max-width:100%;color-scheme:light}
+option{padding:4px}
+input[type=number]{width:110px}
+.att{display:flex;gap:12px;align-items:flex-start}
+.att svg{flex:none;border:1px solid #555;background:#9fd16a}
+.shop{display:grid;grid-template-columns:1fr 120px;gap:10px}
+.frow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.frow .b{flex:1}
+.fst{font-weight:bold;margin-bottom:10px}
+.cv{position:relative;height:260px;background:#fff;border:1px solid #7f9db9}
+.cv canvas{position:absolute;inset:0;width:100%;height:100%}
+.chtop{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+ol.hs{margin:0;padding-left:22px}ol.hs li{padding:2px 0}
+@media(max-width:600px){
+ body{padding:6px 4px 30px}
+ .top{grid-template-columns:1fr}
+ .bottom{grid-template-columns:1fr}
+ .mid{padding-top:0;display:grid;grid-template-columns:repeat(3,1fr)}
+ .lst{height:auto;max-height:260px;min-height:120px}
+ .shop{grid-template-columns:1fr}
+ .tools .cr{display:none}
+}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style></head>
+<body class="bg0">
+<div class="win" id="win">
+ <div class="tb"><span id="title">MaxDila v1.0</span><button aria-label="Minimalizuj" tabindex="-1">_</button><button aria-label="Maksymalizuj" tabindex="-1">□</button><button class="x" id="wx" aria-label="Zakończ grę">×</button></div>
+ <nav class="menu" id="menu">
+  <div><button class="m">Gra</button><div class="dd"><button data-a="new">Nowa gra</button><button data-a="hs">Najlepsi dilerzy</button><button data-a="quit">Koniec gry</button></div></div>
+  <div><button class="m">Opcje</button><div class="dd"><button data-a="bg">Tło gry</button><button data-a="snd" id="o-snd" class="on">Dźwięk włączony</button><button data-a="mus" id="o-mus">Muzyka włączona</button></div></div>
+  <div><button class="m">Informacja</button><div class="dd"><button data-a="help">Jak grać</button><button data-a="about">O grze</button></div></div>
+ </nav>
+ <div class="body">
+  <div class="tools"><button class="b" data-a="new">Nowa gra</button><button class="b" data-a="chart">Wykres</button><button class="b" data-a="gang">Gang</button><span class="cr">remake · oryginał (C) All41 2000</span></div>
+  <div class="top">
+   <div>
+    <div class="stats"><span>Kasa</span><output id="cash">0</output><span>Depozyt</span><output id="dep">0</output><span>Prestiż</span><output id="prest">0</output><span>Dług</span><output id="debt">0</output></div>
+    <div class="lbl">Kondycja</div><div class="bar"><i id="cbar"></i><span id="ctext"></span></div>
+   </div>
+   <div><p class="hint">Wybierz miasto do którego pojedziesz.</p><div id="cities"></div></div>
+  </div>
+  <div class="lbl">Wydarzenia:</div>
+  <div class="box" id="log" aria-live="polite"></div>
+  <div class="bottom">
+   <div><div class="hd">Dostępne na rynku narkotyki</div><div class="box lst"><table><thead><tr><th>Nazwa</th><th class="n">Cena</th></tr></thead><tbody id="mk"></tbody></table></div></div>
+   <div class="mid"><button class="b" data-a="drop">Wyrzuć</button><button class="b" data-a="buy">Kupuj &gt;&gt;</button><button class="b" data-a="sell">&lt;&lt; Sprzedaj</button><button class="b" data-a="shop">Sklep</button><button class="b" data-a="hosp">Szpital</button><button class="b" data-a="fin">Finanse</button></div>
+   <div><div class="hd"><span>Miejsce <b id="space"></b></span><button class="b" data-a="eq">Sprzęt</button></div><div class="box lst"><table><thead><tr><th>Nazwa</th><th class="n">Ilość</th><th class="n">Koszt jedn.</th></tr></thead><tbody id="inv"></tbody></table></div></div>
+  </div>
+ </div>
+</div>
+<script>
+{
+const $=s=>document.querySelector(s);
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cl=(v,a,b)=>Math.max(a,Math.min(b,Math.floor(+v||0)));
+const dz=n=>n==1?'działka':(n%10>=2&&n%10<=4&&(n%100<10||n%100>=20))?'działki':'działek';
+const DR=[['Grass',10,32],['Scun',28,46],['Hash',18,32],['Acid',18,40],['Extasy',14,30],['Speed',26,45],['Heroina',36,56],['Kokaina',105,140],['Brown Sugar',42,62],['Grzybki',12,22]];
+const CITIES=['Katowice','Tychy','Oświęcim','Murcki','Zabrze','Gliwice'];
+const MEV=[[0,.35,'Dostawa z Holandii. Dostawa z nowej plantacji.'],[3,.4,'Hoffman 2000 po promocyjnej cenie.'],[3,2.8,'Maleje ilość LSD na rynku. Ludzie są w stanie zapłacić ogromne ceny za działkę.'],[4,3,'Ekstaza staje się coraz bardziej popularna w nocnych lokalach i dyskotekach.'],[7,2.2,'Na weekend zjechali celebryci. Koka schodzi na pniu.'],[6,.45,'Duży transport przeszedł przez granicę. Hera tanieje.'],[9,3,'Sezon się skończył. Grzybków brak, ceny w kosmos.'],[9,.4,'Mokra jesień w Beskidach. Grzybków jest od groma.'],[5,.45,'Ktoś rozkręcił laboratorium w piwnicy. Speed leje się strumieniami.'],[1,2.6,'Na osiedlach susza. Za scuna płacą jak za zboże.'],[2,.4,'Zjechał tir z Maroka. Hasz tanieje.'],[8,2.5,'Policja przechwyciła transport. Brown Sugar idzie po wysokich cenach.']];
+const SHOP=[{k:'kurtka',n:'Kurtka',q:1,p:500,d:'Gruba skóra: -30% obrażeń.'},{k:'torba',n:'Torba',q:1,p:100,d:'+20 miejsca na towar.'},{k:'aktowka',n:'Aktówka',q:1,p:400,d:'+50 miejsca na towar.'},{k:'fiat',n:'Fiat 126p',q:1,p:5000,d:'+150 miejsca, łatwiej uciec.'},{k:'gnat',n:'Gnat',q:1,p:300,d:'Broń. Strzela pestkami.'},{k:'pestki',n:'Pestki do Gnata',q:10,p:20,d:'10 naboi do gnata.'},{k:'kalach',n:'Kałach',q:1,p:500,d:'Broń. Strzela seriami po 3.'},{k:'magazynek',n:'Magazynek',q:20,p:60,d:'20 naboi do kałacha.'},{k:'granat',n:'Granat',q:1,p:50,d:'Jednorazowy, kładzie 1–3 osoby.'},{k:'shurikan',n:'Shurikan',q:1,p:25,d:'Jednorazowy rzut.'}];
+const UNIQ=['kurtka','torba','aktowka','fiat','gnat','kalach'];
+const HP=12;
+let S, lastNick='';
+
+/* ---------- dźwięk ---------- */
+let AC=null,snd=true,mus=false,musT=null;
+document.addEventListener('pointerdown',()=>{if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}},{capture:true});
+function tone(f,d,t='square',v=.05,w=0){if(!AC)return;try{const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+w;o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.connect(g).connect(AC.destination);o.start(s);o.stop(s+d+.02)}catch(e){}}
+function sfx(k){if(!snd)return;({buy:()=>{tone(880,.07);tone(1320,.12,'square',.05,.07)},alarm:()=>{for(let i=0;i<4;i++)tone(i%2?600:820,.14,'sawtooth',.04,i*.15)},shot:()=>{tone(140,.18,'sawtooth',.09);tone(70,.25,'square',.06,.05)},hurt:()=>tone(95,.35,'triangle',.12),go:()=>{tone(330,.06);tone(494,.09,'square',.05,.07)}})[k]?.()}
+const BASS=[55,55,65.4,55,73.4,55,65.4,49];let step=0;
+function music(on){mus=on;clearInterval(musT);$('#o-mus').classList.toggle('on',on);if(on)musT=setInterval(()=>{tone(BASS[step%8]*2,.18,'triangle',.07);if(step%2)tone(4000,.03,'square',.012);step++},230)}
+
+/* ---------- okna dialogowe ---------- */
+function openDlg(o){return new Promise(res=>{
+ const ov=document.createElement('div');ov.className='ov';
+ ov.innerHTML=`<div class="dlg" role="dialog" aria-modal="true" style="--w:${o.w||360}px"><div class="tb"><span>${esc(o.title)}</span><button class="x" data-id="x" aria-label="Zamknij">×</button></div><div class="dbody">${o.html}</div><div class="dbtn">${(o.buttons||[['ok','OK']]).map(b=>`<button class="b" data-id="${b[0]}" ${b[2]?'disabled':''}>${b[1]}</button>`).join('')}</div></div>`;
+ document.body.appendChild(ov);
+ const vals=()=>{const v={};ov.querySelectorAll('[name]').forEach(e=>v[e.name]=e.value);return v};
+ const top=()=>{const a=document.querySelectorAll('.ov');return a[a.length-1]===ov};
+ const close=id=>{const v=vals();ov.remove();document.removeEventListener('keydown',kd);res({id,v})};
+ const kd=e=>{if(!top())return;if(e.key=='Escape')close('x');else if(e.key=='Enter'&&e.target.tagName=='INPUT'){e.preventDefault();const f=ov.querySelector('.dbtn .b:not(:disabled)');f&&f.click()}};
+ document.addEventListener('keydown',kd);
+ ov.addEventListener('click',e=>{const b=e.target.closest('[data-id]');if(!b||b.disabled)return;const id=b.dataset.id;if(o.keep&&o.keep.includes(id)){o.onBtn(id,ov);return}close(id)});
+ o.onOpen&&o.onOpen(ov);
+ const f=ov.querySelector('.dbody input,.dbtn .b:not(:disabled)');f&&f.focus();
+})}
+const msg=(t,title='MaxDila')=>openDlg({title,html:`<p>${t}</p>`});
+
+function face(k){
+ const skin='#f2c39b';
+ const hat=k=='police'?`<path d="M8 22 Q24 4 40 22 Z" fill="#1d2b5a"/><rect x="6" y="20" width="36" height="5" fill="#111"/><circle cx="24" cy="14" r="3" fill="#f5c542"/>`:`<path d="M9 22 Q24 6 39 22 Z" fill="#222"/><rect x="24" y="19" width="20" height="4" fill="#222"/>`;
+ const mouth=k=='police'?`<path d="M18 38 H30" stroke="#000" stroke-width="2"/>`:`<path d="M17 39 Q24 34 31 39" stroke="#000" stroke-width="2" fill="none"/>`;
+ return `<svg width="56" height="56" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="29" r="14" fill="${skin}"/>${hat}<rect x="15" y="27" width="6" height="3" fill="#000"/><rect x="27" y="27" width="6" height="3" fill="#000"/>${mouth}${k=='dres'?'<path d="M10 48 L14 42 H34 L38 48" fill="#1f5fbf"/><path d="M16 42 V48 M32 42 V48" stroke="#fff" stroke-width="1.5"/>':'<path d="M10 48 L14 42 H34 L38 48" fill="#1d2b5a"/>'}</svg>`;
+}
+
+/* ---------- logika ---------- */
+const cap=()=>100+S.eq.torba*20+S.eq.aktowka*50+S.eq.fiat*150+S.gang.n*10;
+const used=()=>Object.values(S.inv).reduce((a,x)=>a+x.q,0);
+const log=t=>{S.log.push(t);if(S.log.length>80)S.log.shift()};
+function addInv(i,q,c){const x=S.inv[i]||{q:0,c:0};x.c=Math.round((x.c*x.q+c*q)/(x.q+q));x.q+=q;S.inv[i]=x}
+function remInv(i,q){const x=S.inv[i];if(!x)return;x.q-=q;if(x.q<=0)delete S.inv[i]}
+function walk(){S.base=S.base.map((b,i)=>{const[,lo,hi]=DR[i];const n=b*(1+(Math.random()-.5)*.16)+((lo+hi)/2-b)*.08;return Math.max(lo*.8,Math.min(hi*1.2,n))});S.hist.forEach((h,i)=>h.push(Math.round(S.base[i])))}
+function genMarket(){
+ const m=[];DR.forEach((d,i)=>{if(Math.random()<.78)m.push({i,p:Math.max(1,Math.round(S.base[i]*(.85+Math.random()*.3)))})});
+ if(Math.random()<.32){const e=pick(MEV);let it=m.find(x=>x.i==e[0]);if(!it){it={i:e[0],p:Math.round(S.base[e[0]])};m.push(it)}it.p=Math.max(1,Math.round(it.p*e[1]*(.85+Math.random()*.3)));log(e[2])}
+ m.sort((a,b)=>a.i-b.i);S.market=m;S.selM=0;
+}
+function newGame(nick,days){
+ lastNick=nick;
+ S={nick,max:days,day:1,cash:198,dep:0,debt:104,prest:0,cond:100,city:0,market:[],inv:{},eq:{kurtka:0,torba:0,aktowka:0,fiat:0,gnat:0,kalach:0,pestki:0,magazynek:0,granat:0,shurikan:0},gang:{name:'MaXDila squad',n:0,wage:20,mor:50},base:DR.map(d=>(d[1]+d[2])/2),hist:DR.map(()=>[]),log:[],pending:[],selM:0,selI:null,over:false};
+ for(let k=0;k<40;k++)walk();
+ log(`Witaj w Katowicach, ${nick}. Masz 198 zł i 104 zł długu u pana Zdzisia.`);
+ genMarket();render();
+}
+function newDay(){
+ if(S.day>=S.max){endGame('Minął ostatni dzień gry. Czas policzyć kasę.');return false}
+ S.day++;walk();
+ S.debt=Math.floor(S.debt*1.05);if(S.dep>0)S.dep=Math.floor(S.dep*1.01);
+ const G=S.gang;
+ if(G.n){const c=G.n*G.wage;if(S.cash>=c){S.cash-=c;G.mor+=G.wage>=40?6:G.wage>=25?2:G.wage>=15?-2:-8}else{G.mor-=25;log('Nie masz kasy na dniówki. Chłopaki są wściekli.')}G.mor=cl(G.mor,0,100);if(G.mor<15&&Math.random()<.5){G.n--;log('Jeden z twoich ludzi odszedł z gangu.')}
+  if(G.n&&G.mor<30){S.pending.push('Ludzie z Twojego gangu narzekają - ich morale jest słabe...');
+   const ks=Object.keys(S.inv);if(ks.length&&Math.random()<.4){ks.forEach(i=>remInv(i,Math.ceil(S.inv[i].q*.15)));S.pending.push('Twoi ludzie rozkradają towar!')}}}
+ if(S.cond<100)S.cond++;
+ log(`Minęła kolejna noc...Nastał dzień ${S.day} twej nędznej egzystencji`);
+ return true;
+}
+async function travel(c){
+ if(S.over||c==S.city)return;
+ const cost=S.eq.fiat?15:R(5,10);
+ if(S.cash<cost){await msg('Nie masz kasy na przejazd...');return}
+ S.cash-=cost;S.city=c;sfx('go');
+ if(!newDay())return;
+ genMarket();render();
+ while(S.pending.length)await msg(S.pending.shift());
+ await encounter();render();
+}
+// trafienia w części ciała: [gdzie, mnożnik, waga losowania]
+const PARTS=[['w nogę',.8,22],['w tyłek',.5,18],['w plecy',1,22],['w rękę',.7,16],['w brzuch',1.2,12],['w głowę',2.2,10]];
+function part(){let t=Math.random()*PARTS.reduce((a,p)=>a+p[2],0);for(const p of PARTS){t-=p[2];if(t<=0)return p}return PARTS[0]}
+function volley(n,mode,P){
+ const hitCh={stone:.35,shot:.3,beat:.6}[mode],base={stone:[3,7],shot:[8,15],beat:[2,6]}[mode];
+ const L=[];let dmg=0,leg=0,head=false;
+ for(let j=0;j<n;j++){
+  if(Math.random()>=hitCh)continue;
+  const p=part(),hd=p[0]=='w głowę';let d=Math.max(1,Math.round(R(...base)*p[1]));
+  if(S.eq.kurtka&&!hd)d=Math.round(d*.7);
+  dmg+=d;if(p[0]=='w nogę')leg=1;if(hd)head=true;
+  const what=mode=='stone'?`Kamień trafia cię ${p[0]}`:mode=='shot'?`Kula trafia cię ${p[0]}`:P?`Dostajesz pałką ${p[0]}`:`Dostajesz ${pick(['z pięści','z kopa','z glana','z bejsbola'])} ${p[0]}`;
+  L.push(`${what}${hd?'!!!':'.'} −${d}%`);
+ }
+ if(head&&mode!='shot')L.push('Kręci ci się w głowie...');
+ if(dmg){S.cond=Math.max(0,S.cond-dmg);sfx(mode=='shot'?'shot':'hurt');render()}
+ return{dmg,L,leg,head};
+}
+function hurt(d){if(S.eq.kurtka)d=Math.round(d*.7);S.cond=Math.max(0,S.cond-d);sfx('hurt');render();return d}
+const dead=()=>S.cond<=0;
+async function die(why){await endGame(`${why}<br>Twoja kariera dilera skończyła się w dniu ${S.day}.`,true)}
+function weapon(){const e=S.eq;if(e.kalach&&e.magazynek>0)return{k:'kalach',n:`Kałach (${e.magazynek} nab.)`};if(e.gnat&&e.pestki>0)return{k:'gnat',n:`Gnat (${e.pestki} pestek)`};if(e.granat>0)return{k:'granat',n:`Granat (${e.granat})`};if(e.shurikan>0)return{k:'shurikan',n:`Shurikan (${e.shurikan})`};return null}
+
+async function encounter(){
+ const r=Math.random(),heat=Math.min(.1,used()/2500+Math.max(0,S.prest)/300);
+ if(r<.1){
+  if(S.cash<=0)return;
+  if(S.gang.n&&Math.random()<.15*S.gang.n){log('Chłopaki z gangu przegonili doliniarzy.');return}
+  const t=Math.ceil(S.cash*(.5+Math.random()*.5));S.cash-=t;render();
+  await msg(`Zostałeś obrobiony przez doliniarzy.<br>Zniknęło ${t} zł.`);return}
+ if(r<.22)return fight('gang');
+ if(r<.30+heat)return fight('police');
+ if(r<.35+heat){const i=R(0,DR.length-1),q=Math.min(R(1,6),cap()-used());if(q<=0)return;addInv(i,q,0);render();await msg(pick([`Na ławce w parku ktoś zostawił reklamówkę. W środku ${q} ${dz(q)} ${DR[i][0]}.`,`Kumpel oddał ci dług w naturze: ${q} ${dz(q)} ${DR[i][0]}.`]));return}
+ if(r<.39+heat&&S.debt>800){
+  const d=hurt(R(6,16)),t=Math.min(S.cash,Math.ceil(S.debt*.25));S.cash-=t;S.debt-=t;render();
+  await msg(`Odwiedzili cię windykatorzy pana Zdzisia. Przypominają o długu.<br>Tracisz ${d}% kondycji${t?`, zabrali ${t} zł na poczet długu`:''}.`);
+  if(dead())await die('Windykatorzy przesadzili.');return}
+ if(r<.42){const t=R(20,80);S.cash+=t;render();await msg(`Znalazłeś portfel w tramwaju. W środku ${t} zł.`);return}
+ if(r<.48)return wholesale();
+ if(r<.52){
+  const cost=R(3,15)*100-5;
+  const a=await openDlg({title:'Confirm',html:`<p>Kolega przyłączy się do gangu jeżeli dasz mu ${cost} zł zaliczki.<br>Czy przyjmujesz go do gangu?</p>`,buttons:[['y','Yes'],['n','No']]});
+  if(a.id!='y')return;if(S.cash<cost)return msg('Masz za mało kasy!');
+  S.cash-=cost;S.gang.n++;S.gang.mor=Math.min(100,S.gang.mor+5);log('Do gangu dołączył nowy kolega.');render();
+ }
+}
+async function wholesale(){
+ const a=await openDlg({title:'Confirm',html:'<p>Jakiś diler chce sprzedać Ci hurtowy towar.<br>Czy idziesz z nim aby sfinalizować transakcję?</p>',buttons:[['y','Yes'],['n','No']]});
+ if(a.id!='y')return;
+ const t=Math.random();
+ if(t<.15){await msg('To była zasadzka! Za rogiem czekali tajniacy.');return fight('police')}
+ if(t<.3){await msg('To była ustawka! Zza garaży wychodzą dresiarze.');return fight('gang')}
+ const i=R(0,DR.length-1),p=Math.max(1,Math.round(S.base[i]*(.4+Math.random()*.2))),q=R(30,90);
+ const mx=Math.min(q,Math.floor(S.cash/p),Math.max(0,cap()-used()));
+ const r=await openDlg({title:'Hurt',html:`<p>Diler ma ${q} ${dz(q)} ${DR[i][0]} po <b>${p} zł</b> za działkę (zwykle ok. ${Math.round(S.base[i])}).</p><p><label>Ile bierzesz: <input name="q" type="number" min="0" max="${mx}" value="${mx}"></label></p>`,buttons:[['ok','OK'],['no','Anuluj']]});
+ if(r.id!='ok')return;const n=cl(r.v.q,0,mx);
+ if(!n)return msg('Masz za mało kasy lub miejsca!');
+ S.cash-=n*p;addInv(i,n,p);S.selI=i;sfx('buy');log(`Kupiłeś hurtem ${n} ${dz(n)} ${DR[i][0]}.`);render();
+}
+
+async function fight(kind){
+ const P=kind=='police';let n=P?R(2,4):R(2,5),legs=0,tries=0;sfx('alarm');
+ const intro=P?'Wydział d/s narkotyków zorganizował nalot na ulicach miasta.':pick(['Zostałeś napadnięty przez osiedlowy gang.','Dresiarze z bloku obok chcą cię oskubać.','Zaczepiła cię ekipa łysych w dresach.']);
+ while(!S.over){
+  const w=weapon();
+  const r=await openDlg({title:'Zostałeś zaatakowany!!!',w:420,html:`<div class="att">${face(P?'police':'dres')}<div><p>${intro}</p><p>${P?'Policjantów':'Napastników'}: <b>${n}</b>${S.gang.n?` · twoich ludzi: <b>${S.gang.n}</b>`:''}<br>Broń: ${w?w.n:'<i>brak</i>'} · kondycja: ${S.cond}%</p><p><b>Musisz działać szybko !!! Co robisz???</b></p></div></div>`,buttons:[['run','Uciekam'],['stay','Stoję'],['def','Bronię się',!w]]});
+  if(r.id=='run'||r.id=='x'){
+   const ch=.5+(S.eq.fiat?.2:0)+S.gang.n*.03-(P?.1:0)-legs*.15-tries*.05;tries++;
+   if(Math.random()<ch){
+    // uciekłeś, ale lecą za tobą kamienie / kule
+    const h=volley(n,P?'shot':'stone');legs+=h.leg;S.prest-=1;
+    await msg(`${S.eq.fiat&&Math.random()<.5?'Wskoczyłeś do malucha i odjeżdżasz z piskiem opon...':'Udało ci się uciec...'}<br><br>${P?'Policjanci bez ostrzeżenia strzelają do Ciebie!!!':'Dresiarze rzucają za tobą kamieniami!!!'}<br>${h.L.length?h.L.join('<br>')+`<br><b>Razem tracisz ${h.dmg}% kondycji.</b>`:'Wszystko chybiło. Masz farta.'}`,h.L.length?'Zostałeś trafiony':'MaxDila');
+    if(dead())return die(h.head?(P?'Kula w głowę podczas ucieczki.':'Kamień trafił cię prosto w głowę.'):(P?'Zastrzelony podczas ucieczki przed policją.':'Wykrwawiłeś się w krzakach za blokiem.'));
+    return}
+   // dopadli cię - lanie, potem znowu wybór
+   const h=volley(n,'beat',P);legs+=h.leg;
+   await msg(`Nie udało się uciec! Dopadli cię.<br><br>${h.L.length?h.L.join('<br>')+`<br><b>Razem tracisz ${h.dmg}% kondycji.</b>`:'Jakimś cudem nikt cię nie trafił.'}${h.leg?'<br><i>Kulejesz – następna ucieczka będzie trudniejsza.</i>':''}`,'Dopadli cię!');
+   if(dead())return die(P?'Policjanci przesadzili z pałkami.':'Pobity na śmierć przez dresiarzy.');
+   continue}
+  if(r.id=='stay'){
+   if(P){const tot=used();if(!tot){await msg('Przeszukali cię i nic nie znaleźli. Puścili cię wolno.');return}
+    const fine=Math.min(S.cash,R(50,150)+Math.floor(S.cash*.2));S.inv={};S.cash-=fine;S.prest-=3;render();
+    await msg(`Skonfiskowali cały towar (${tot} ${dz(tot)})${fine?` i wlepili ci grzywnę ${fine} zł`:''}.`);return}
+   const h=volley(n,'beat'),t=Math.floor(S.cash*(.3+Math.random()*.4));S.cash-=t;let lost='';
+   const ks=Object.keys(S.inv);if(ks.length){const i=pick(ks),q=Math.ceil(S.inv[i].q*(.3+Math.random()*.4));remInv(i,q);lost=`, ${q} ${dz(q)} ${DR[i][0]}`}
+   S.prest-=2;render();await msg(`Stoisz i dostajesz łomot.<br>${h.L.length?h.L.join('<br>')+`<br><b>Razem tracisz ${h.dmg}% kondycji.</b>`:'Tylko cię popchnęli.'}<br>Zabrali ci ${t} zł${lost}.`);
+   if(dead())return die('Pobity na śmierć przez dresiarzy.');return}
+  // bronię się
+  const e=S.eq,L=[];let k=0;sfx('shot');
+  if(w.k=='kalach'){const s=Math.min(3,e.magazynek);e.magazynek-=s;for(let j=0;j<s;j++)if(Math.random()<.45)k++;L.push('Puszczasz serię z kałacha.')}
+  else if(w.k=='gnat'){e.pestki--;if(Math.random()<.6)k++;L.push('Strzelasz z gnata.')}
+  else if(w.k=='granat'){e.granat--;k=R(1,3);L.push('Rzucasz granat!')}
+  else{e.shurikan--;if(Math.random()<.45)k++;L.push('Rzucasz shurikanem.')}
+  for(let j=0;j<S.gang.n;j++)if(Math.random()<.3)k++;
+  k=Math.min(k,n);n-=k;
+  L.push(k?`Kładziesz ${k} ${P?(k==1?'policjanta':'policjantów'):(k==1?'napastnika':'napastników')}.`:'Pudło!');
+  if(n<=0){
+   if(P){S.prest+=8;L.push('Policjanci wycofali się po posiłki. Na mieście mówią tylko o tobie.')}
+   else{S.prest+=3;const c=R(10,60);S.cash+=c;L.push(`Dresiarze uciekli w popłochu. Zgarniasz ${c} zł.`);
+    if(Math.random()<.5){const i=Math.random()<.5?3:R(0,DR.length-1),q=Math.min(R(1,4),cap()-used());if(q>0){addInv(i,q,0);L.push(`Przy nieprzytomnym koledze znalazłeś ${q} ${i==3?(q==1?'kwas':q<5?'kwasy':'kwasów'):dz(q)+' '+DR[i][0]}`)}}}
+   render();await msg(L.join('<br>'),'Wygrana!');return}
+  if(P&&S.gang.n&&Math.random()<.15){S.gang.n--;L.push('Zginął jeden z twoich ludzi.')}
+  const h=volley(n,P?'shot':'beat',P);legs+=h.leg;
+  if(h.L.length)L.push('Zostałeś trafiony!',...h.L,`<b>Razem tracisz ${h.dmg}% kondycji.</b>`);else L.push('Nikt cię nie trafił.');
+  render();await msg(L.join('<br>'));
+  if(dead())return die(P?'Zginąłeś w strzelaninie z policją.':'Zatłuczony przez gang.');
+ }
+}
+
+async function endGame(text,isDead){
+ S.over=true;render();
+ const score=isDead?0:S.cash+S.dep-S.debt;
+ let hs=[];try{hs=JSON.parse(localStorage.getItem('maxdila_hs')||'[]');hs.push({n:S.nick,s:score,d:S.day});hs.sort((a,b)=>b.s-a.s);hs=hs.slice(0,10);localStorage.setItem('maxdila_hs',JSON.stringify(hs))}catch(e){}
+ const r=await openDlg({title:isDead?'Koniec':'Koniec gry',w:380,html:`<p>${text}</p><p>Kasa: ${S.cash} · Depozyt: ${S.dep} · Dług: ${S.debt}<br>Prestiż: ${S.prest}</p><p><b>Wynik: ${score} zł</b></p>`,buttons:[['new','Nowa gra'],['ok','OK']]});
+ if(r.id=='new')startDlg();
+}
+
+/* ---------- akcje ---------- */
+async function buy(){
+ const it=S.market[S.selM];if(!it||S.over)return;const nm=DR[it.i][0];
+ const free=Math.max(0,cap()-used()),aff=Math.floor(S.cash/it.p),mx=Math.min(free,aff);
+ if(mx<=0)return msg('Masz za mało kasy lub miejsca!');
+ const r=await openDlg({title:'Kupuj '+nm,html:`<p>Możesz sobie pozwolić na zakup ${aff} ${dz(aff)} ${nm}.<br>Masz miejsce na ${free} ${dz(free)}.</p><p><label>Ile chcesz kupić: <input name="q" type="number" min="1" max="${mx}" value="${mx}"></label></p><p>Aktualna cena: <b>${it.p}</b></p>`,buttons:[['ok','OK'],['no','Anuluj']]});
+ if(r.id!='ok')return;const q=cl(r.v.q,0,mx);if(!q)return;
+ S.cash-=q*it.p;addInv(it.i,q,it.p);S.selI=it.i;sfx('buy');render();
+}
+async function sell(){
+ const i=S.selI,x=S.inv[i];if(x==null||S.over)return;const nm=DR[i][0];
+ const m=S.market.find(z=>z.i==i);if(!m)return msg(`Nikt tu dziś nie kupuje ${nm}. Spróbuj w innym mieście.`);
+ const r=await openDlg({title:'Sprzedaż',html:`<p>Sprzedaj ${nm}.<br>Masz ${x.q} ${dz(x.q)}. Cena tutaj: <b>${m.p}</b> (kupione po ${x.c}).</p><p><label>Ile chcesz sprzedać: <input name="q" type="number" min="1" max="${x.q}" value="${x.q}"></label></p>`,buttons:[['ok','OK'],['no','Anuluj']]});
+ if(r.id!='ok')return;const q=cl(r.v.q,0,x.q);if(!q)return;
+ const profit=(m.p-x.c)*q;S.cash+=q*m.p;remInv(i,q);
+ if(q<10)S.prest-=1;else if(profit>0)S.prest+=1+Math.floor(profit/400);
+ sfx('buy');render();
+ if(Math.random()<(x.c<S.base[i]*.6?.2:.06)){S.prest-=2;render();await msg('Ludzie narzekają na towar, który im sprzedajesz.')}
+}
+async function drop(){
+ const i=S.selI,x=S.inv[i];if(x==null||S.over)return;
+ const r=await openDlg({title:'Wyrzuć',html:`<p>Wyrzucić ${DR[i][0]}? Masz ${x.q} ${dz(x.q)}.</p><p><label>Ile: <input name="q" type="number" min="1" max="${x.q}" value="${x.q}"></label></p>`,buttons:[['ok','Wyrzuć'],['no','Anuluj']]});
+ if(r.id!='ok')return;remInv(i,cl(r.v.q,0,x.q));render();
+}
+async function shop(){
+ let sel=0;const rows=()=>SHOP.map((s,k)=>`<tr data-s="${k}" class="${k==sel?'sel':''}"><td>${s.n}</td><td class="n">${s.q}</td><td class="n">${s.p}</td></tr>`).join('');
+ await openDlg({title:'Sklep internetowy',w:470,html:`<div class="shop"><div class="box lst" style="height:230px"><table><thead><tr><th>Nazwa</th><th class="n">Ilość</th><th class="n">Cena</th></tr></thead><tbody class="sh">${rows()}</tbody></table></div><div><p>Kasa:<br><b class="shc" style="font-size:18px">${S.cash}</b></p><p class="shd">${SHOP[0].d}</p></div></div>`,buttons:[['buy','Kupuj'],['ok','Powrót']],keep:['buy'],
+  onOpen:ov=>{const tb=ov.querySelector('.sh');const pickRow=e=>{const t=e.target.closest('[data-s]');if(!t)return;sel=+t.dataset.s;tb.innerHTML=rows();ov.querySelector('.shd').textContent=SHOP[sel].d};tb.addEventListener('click',pickRow);tb.addEventListener('dblclick',e=>{pickRow(e);ov.querySelector('[data-id=buy]').click()})},
+  onBtn:async(id,ov)=>{const s=SHOP[sel];if(UNIQ.includes(s.k)&&S.eq[s.k])return msg('Już to masz.');if(S.cash<s.p)return msg('Masz za mało kasy lub miejsca!');S.cash-=s.p;S.eq[s.k]+=s.q;sfx('buy');log(`Kupiłeś: ${s.n}.`);render();ov.querySelector('.shc').textContent=S.cash}});
+}
+async function hosp(){
+ const mx=()=>Math.min(S.cash,(100-S.cond)*HP);
+ await openDlg({title:'Szpital miłosierdzia',w:380,html:`<p>Kondycja po kuracji</p><div class="bar" style="margin-bottom:12px"><i class="hb" style="width:${S.cond}%"></i><span class="ht">${S.cond}%</span></div><p><label>Kasa na leczenie<br><input class="ha" type="number" min="0" step="${HP}" max="${mx()}" value="${mx()}"></label></p><p>Koszt całkowitego wyleczenia: <b class="hf">${(100-S.cond)*HP}</b> zł<br><small>${HP} zł za 1% kondycji</small></p>`,buttons:[['heal','Leczenie'],['ok','Powrót']],keep:['heal'],
+  onOpen:ov=>{const inp=ov.querySelector('.ha');ov._up=()=>{const c=S.cond+Math.floor(cl(inp.value,0,mx())/HP);ov.querySelector('.hb').style.width=c+'%';ov.querySelector('.ht').textContent=c+'%';ov.querySelector('.hf').textContent=(100-S.cond)*HP};inp.addEventListener('input',ov._up);ov._up()},
+  onBtn:(id,ov)=>{const inp=ov.querySelector('.ha'),p=Math.floor(cl(inp.value,0,mx())/HP);if(!p)return;S.cash-=p*HP;S.cond+=p;render();inp.max=mx();inp.value=mx();ov._up()}});
+}
+async function fin(){
+ const lim=()=>Math.max(0,1000+Math.max(0,S.prest)*200-S.debt);
+ const ops=[['dep','Depozyt',()=>S.cash,a=>{S.cash-=a;S.dep+=a}],['wd','Pobranie',()=>S.dep,a=>{S.dep-=a;S.cash+=a}],['pay','Spłata',()=>Math.min(S.cash,S.debt),a=>{S.cash-=a;S.debt-=a}],['loan','Pożyczka',lim,a=>{S.cash+=a;S.debt+=a}]];
+ const st=()=>`Kasa ${S.cash} · Depozyt ${S.dep} · Dług ${S.debt}`;
+ await openDlg({title:'Tutaj uregulujesz swoje finanse',w:360,html:`<p class="fst">${st()}</p><p>Wybierz operację do przeprowadzenia:</p>${ops.map(o=>`<div class="frow"><input type="number" data-f="${o[0]}" min="0" max="${o[2]()}" value="${o[2]()}" aria-label="${o[1]}"><button class="b" data-id="${o[0]}" ${o[2]()?'':'disabled'}>${o[1]}</button></div>`).join('')}<p style="font-size:13px">Dług rośnie 5% dziennie, depozyt 1%. Limit długu zależy od prestiżu.</p>`,buttons:[['ok','Powrót']],keep:ops.map(o=>o[0]),
+  onBtn:(id,ov)=>{const o=ops.find(z=>z[0]==id),a=cl(ov.querySelector(`[data-f=${id}]`).value,0,o[2]());if(a>0)o[3](a);render();
+   ops.forEach(z=>{const inp=ov.querySelector(`[data-f=${z[0]}]`),m=z[2]();inp.max=m;inp.value=m;ov.querySelector(`.frow [data-id=${z[0]}]`).disabled=!m});ov.querySelector('.fst').textContent=st()}});
+}
+async function gang(){
+ const G=S.gang,maxN=()=>1+Math.floor(Math.max(0,S.prest)/4),party=()=>50+30*G.n;
+ const mor=()=>G.mor<25?'Słabe':G.mor<50?'Średnie':G.mor<80?'Dobre':'Wyśmienite';
+ const r=await openDlg({title:'Informacje o współpracownikach',w:400,html:`<p><label>Nazwa gangu: <input name="gn" maxlength="24" value="${esc(G.name)}"></label></p><div class="frow"><span style="flex:1">Ilość ludzi: <b class="gc">${G.n}</b></span><button class="b" data-id="hire">Nabór (150 zł)</button><button class="b" data-id="fire">Wyrzuć jednego</button></div><p><label>Dniówka na głowę: <input name="w" type="number" min="5" max="200" step="5" value="${G.wage}"></label></p><div class="frow"><span style="flex:1">Morale: <b class="gm">${mor()}</b></span><button class="b" data-id="party">Impreza (<span class="gp">${party()}</span> zł)</button></div><p style="font-size:13px">Każdy człowiek: +10 miejsca, pomaga w bójkach i odgania doliniarzy. Większy prestiż = więcej chętnych.</p>`,buttons:[['ok','OK']],keep:['hire','fire','party'],
+  onBtn:async(id,ov)=>{
+   if(id=='hire'){if(G.n>=maxN())return msg('Nikt poważny nie chce pracować dla leszcza. Zdobądź więcej prestiżu.');if(S.cash<150)return msg('Nie masz kasy na wpisowe.');S.cash-=150;G.n++;log('Do gangu dołączył nowy człowiek.')}
+   if(id=='fire'&&G.n){G.n--;G.mor=Math.max(0,G.mor-10)}
+   if(id=='party'){if(!G.n)return msg('Impreza sam ze sobą? Smutne.');if(S.cash<party())return msg('Nie stać cię na imprezę.');S.cash-=party();G.mor=Math.min(100,G.mor+30);log('Impreza do białego rana. Morale w górę.');msg('Urządzasz imprezę dla gangu. Morale gangu wzrasta...')}
+   ov.querySelector('.gc').textContent=G.n;ov.querySelector('.gm').textContent=mor();ov.querySelector('.gp').textContent=party();render()}});
+ G.name=(r.v.gn||'').trim()||G.name;G.wage=cl(r.v.w,5,200)||20;
+}
+function equip(){
+ const e=S.eq,L=SHOP.filter(s=>e[s.k]).map(s=>`${s.n}${UNIQ.includes(s.k)?'':`: ${e[s.k]}`}`);
+ return msg(`${L.length?L.join('<br>'):'Nie masz żadnego sprzętu.'}<br><br>Miejsce na towar: ${cap()}`,'Sprzęt');
+}
+function chart(){
+ const draw=(cv,i,sc)=>{const W=cv.clientWidth,H=cv.clientHeight,dp=devicePixelRatio||1;cv.width=W*dp;cv.height=H*dp;const c=cv.getContext('2d');c.scale(dp,dp);c.font='13px Tahoma,sans-serif';
+  const L=44,T=22,B=24,Rr=12,ph=H-T-B,pw=W-L-Rr;c.fillStyle='#000';c.fillText('Cena',4,14);c.fillText('Czas',W-40,H-6);
+  c.strokeStyle='#000';c.beginPath();c.moveTo(L,T);c.lineTo(L,H-B);c.lineTo(W-Rr,H-B);c.stroke();
+  if(i<0){c.setLineDash([3,3]);for(let k=0;k<5;k++){const y=T+ph*k/5;c.beginPath();c.moveTo(L,y);c.lineTo(W-Rr,y);c.stroke()}c.setLineDash([]);c.fillText('wybierz substancję',L+12,T+22);return}
+  const h=S.hist[i].slice(-sc),mn=Math.min(...h)*.9,mx=Math.max(...h)*1.1;
+  c.setLineDash([3,3]);c.strokeStyle='#888';for(let k=0;k<5;k++){const y=T+ph*k/5,v=Math.round(mx-(mx-mn)*k/5);c.beginPath();c.moveTo(L,y);c.lineTo(W-Rr,y);c.stroke();c.fillText(v,4,y+4)}
+  c.setLineDash([]);c.strokeStyle='#c00';c.lineWidth=2;c.beginPath();h.forEach((v,k)=>{const x=L+pw*k/Math.max(1,h.length-1),y=T+ph*(mx-v)/(mx-mn);k?c.lineTo(x,y):c.moveTo(x,y)});c.stroke();
+  c.fillStyle='#000';c.fillText(`${DR[i][0]}: teraz ~${h[h.length-1]} zł`,L+8,T-6)};
+ openDlg({title:'Wykres zmian cen',w:560,html:`<div class="chtop"><button class="b" data-id="ref">Odśwież</button><select class="cs" aria-label="Substancja"><option value="-1">wybierz substancję</option>${DR.map((d,i)=>`<option value="${i}">${d[0].toLowerCase()}</option>`).join('')}</select><label>Skala <select class="sc"><option>36</option><option>72</option><option>144</option><option>360</option></select> dni</label></div><div class="cv"><canvas></canvas></div>`,buttons:[['ok','OK']],keep:['ref'],
+  onOpen:ov=>{const cv=ov.querySelector('canvas'),go=()=>draw(cv,+ov.querySelector('.cs').value,+ov.querySelector('.sc').value);ov._go=go;ov.querySelectorAll('select').forEach(s=>s.addEventListener('change',go));const ro=new ResizeObserver(go);ro.observe(cv)},
+  onBtn:(id,ov)=>ov._go()});
+}
+async function hs(){let a=[];try{a=JSON.parse(localStorage.getItem('maxdila_hs')||'[]')}catch(e){}
+ return msg(a.length?`<ol class="hs">${a.map(x=>`<li>${esc(x.n)} — <b>${esc(x.s)} zł</b> (dzień ${esc(x.d)})</li>`).join('')}</ol>`:'Jeszcze nikt nie skończył gry.','Najlepsi dilerzy')}
+async function startDlg(){
+ const r=await openDlg({title:'MaXDila 2000',w:340,html:`<p>Witam w grze MaXDila 2000.</p><p><label>Długość gry: <select name="d"><option value="31">miesiąc</option><option value="90">kwartał</option><option value="182">pół roku</option><option value="365" selected>cały rok</option></select></label></p><p>Wpisz ksywę pod którą chcesz być znany w środowisku dilerów.</p><p><input name="n" maxlength="20" value="${esc(lastNick)}" aria-label="Ksywa"></p>`,buttons:[['ok','Start']]});
+ newGame((r.v.n||'').trim()||'Anonim',+r.v.d||365);
+}
+
+/* ---------- widok ---------- */
+function render(){
+ $('#title').textContent=`MaxDila v1.0 - dzień ${S.day} z ${S.max}`;
+ $('#cash').textContent=S.cash;$('#dep').textContent=S.dep;$('#prest').textContent=S.prest;$('#debt').textContent=S.debt;
+ $('#cbar').style.width=S.cond+'%';$('#ctext').textContent=S.cond+'%';
+ $('#cities').innerHTML=CITIES.map((c,i)=>`<button class="b" data-c="${i}" ${i==S.city||S.over?'disabled':''}>${c}</button>`).join('');
+ const lg=$('#log');lg.innerHTML=S.log.map(l=>`<div>${esc(l)}</div>`).join('');lg.scrollTop=lg.scrollHeight;
+ if(S.selM>=S.market.length)S.selM=0;
+ $('#mk').innerHTML=S.market.map((x,k)=>`<tr data-m="${k}" class="${k==S.selM?'sel':''}"><td>${DR[x.i][0]}</td><td class="n">${x.p}</td></tr>`).join('');
+ const ks=Object.keys(S.inv).map(Number).sort((a,b)=>a-b);if(!ks.includes(S.selI))S.selI=ks.length?ks[0]:null;
+ $('#inv').innerHTML=ks.map(i=>`<tr data-v="${i}" class="${i==S.selI?'sel':''}"><td>${DR[i][0]}</td><td class="n">${S.inv[i].q}</td><td class="n">${S.inv[i].c}</td></tr>`).join('');
+ $('#space').textContent=`${Math.max(0,cap()-used())}/${cap()}`;
+ document.querySelectorAll('.mid .b').forEach(b=>b.disabled=S.over);
+}
+
+const ACT={new:startDlg,hs,quit:async()=>{if(S.over)return;const r=await openDlg({title:'MaxDila',html:'<p>Na pewno chcesz zakończyć grę teraz?</p>',buttons:[['ok','Tak'],['no','Nie']]});if(r.id=='ok')endGame('Przeszedłeś na emeryturę przed czasem.')},
+ bg:()=>{const b=document.body,n=(+b.className.slice(2)+1)%3;b.className='bg'+n},snd:()=>{snd=!snd;$('#o-snd').classList.toggle('on',snd)},mus:()=>music(!mus),
+ help:()=>msg('Kupuj tanio, sprzedawaj drogo. Każdy przejazd do innego miasta to nowy dzień: dług rośnie 5%, gang chce dniówkę, a po drodze czekają doliniarze, dresiarze i policja.<br><br>Bez broni możesz tylko uciekać albo stać. Broń kupisz w Sklepie, kondycję podreperujesz w Szpitalu. Na koniec liczy się kasa + depozyt − dług.','Jak grać'),
+ about:()=>msg('MaxDila 2000 – remake w przeglądarce.<br>Na podstawie gry MaxDila v1.0 (C) by All41 2000.','O grze'),
+ chart,gang,drop,buy,sell,shop,hosp:hosp,fin,eq:equip};
+document.addEventListener('click',e=>{
+ const m=e.target.closest('.menu>div');document.querySelectorAll('.menu>div').forEach(d=>{if(d!==m)d.classList.remove('open')});
+ if(e.target.closest('.m'))m.classList.toggle('open');
+ const a=e.target.closest('[data-a]');if(a){m&&m.classList.remove('open');if(!a.disabled)ACT[a.dataset.a]?.()}
+ const c=e.target.closest('[data-c]');if(c&&!c.disabled)travel(+c.dataset.c);
+ const mr=e.target.closest('[data-m]');if(mr){S.selM=+mr.dataset.m;render()}
+ const vr=e.target.closest('[data-v]');if(vr){S.selI=+vr.dataset.v;render()}
+});
+$('#mk').addEventListener('dblclick',buy);$('#inv').addEventListener('dblclick',sell);
+$('#wx').addEventListener('click',ACT.quit);
+newGame('Anonim',365);startDlg();
+}
+</script>
+</body></html>
