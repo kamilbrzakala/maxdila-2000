@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.1 – 2026-11-26
+- Czysty start nie tworzy już zapisu. Zapis powstaje dopiero po pierwszym ruchu, więc pusty start pokazuje zwykły panel, a „Kontynuuj” tylko gdy jest realny stan gry.
+
 ## 1.5.0 – 2026-11-26
 - Autozapis stanu gry w przeglądarce (localStorage) po każdym ruchu.
 - Po odświeżeniu lub zamknięciu karty na ekranie startowym jest przycisk „Kontynuuj (dzień X)” obok „Nowa gra”.
