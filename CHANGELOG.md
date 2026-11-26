@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 – 2026-11-26
+- Autozapis stanu gry w przeglądarce (localStorage) po każdym ruchu.
+- Po odświeżeniu lub zamknięciu karty na ekranie startowym jest przycisk „Kontynuuj (dzień X)” obok „Nowa gra”.
+- Zapis znika po zakończeniu gry; „Nowa gra” nadpisuje go świeżym stanem.
+
 ## 1.4.1 – 2026-11-26
 - Limit pożyczki u Zdzisia też rośnie z prestiżem (1500/1000 + prestiż × 120), tak jak limit banku.
 
